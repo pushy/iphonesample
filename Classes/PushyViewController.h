@@ -10,6 +10,7 @@
 
 @interface PushyViewController : UITableViewController <MFMailComposeViewControllerDelegate> {
 	NSString *deviceToken;
+	NSMutableArray *data;
 }
 
 - (void)showDeviceToken;

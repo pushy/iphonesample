@@ -150,6 +150,30 @@
 	NSLog(@"ERROR: NSError query result: %@", error);
 }
 
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+	NSLog(@"%@", userInfo);
+	int i, count;
+	count = [userInfo count];
+	for (i = 0; i < count; i++)
+	{
+		// create a temp array from user defaults
+		NSArray *tempArray = [[NSUserDefaults standardUserDefaults] arrayForKey:@"_PDNotifications"];
+		// create a mutable array and insert the above array
+		NSMutableArray *data = [[NSMutableArray alloc] initWithArray:tempArray];
+		
+		NSDictionary *aps = [userInfo valueForKey:@"aps"];
+		NSString *message = [aps valueForKey:@"alert"];
+		
+		// insert message into array
+		[data insertObject:message atIndex:0];
+		// save array to user defaults
+		[[NSUserDefaults standardUserDefaults] setObject:data forKey:@"_PDNotifications"];
+		
+		// Reload table view
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"newNotif" object:self];
+	}
+}
+
 - (void)dealloc {
     [navigationController release];
     [window release];

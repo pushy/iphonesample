@@ -26,6 +26,13 @@
 	
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Device Token" style:UIBarButtonItemStylePlain target:self action:@selector(showDeviceToken)];
+
+	// subscribe to the newNotif notification so we can reload the table view
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reload) name:@"newNotif" object:nil];
+}
+
+- (void)reload {
+	[self.tableView reloadData];
 }
 
 - (void)showDeviceToken {
@@ -68,7 +75,9 @@
 
 // Customize the number of rows in the table view.
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 0;
+	NSArray *tempArray = [[NSUserDefaults standardUserDefaults] arrayForKey:@"_PDNotifications"];
+	data = [[NSMutableArray alloc] initWithArray:tempArray];
+	return [data count];
 }
 
 
@@ -81,8 +90,9 @@
     if (cell == nil) {
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
     }
-    
+	
 	// Configure the cell.
+	cell.textLabel.text = [data objectAtIndex:indexPath.row];
 	
     return cell;
 }
