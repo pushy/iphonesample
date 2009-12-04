@@ -30,7 +30,7 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application {    
     // Register for remote notifications
 	NSLog(@"Registering for remote notifications");
-	[[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge)];
+	[[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
 	
     // Override point for customization after app launch    
     [window addSubview:[navigationController view]];

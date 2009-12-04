@@ -25,6 +25,7 @@
 		CB771773108118CD0045B76E /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB771772108118CD0045B76E /* CFNetwork.framework */; };
 		CB77177D108118FE0045B76E /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB77177C108118FE0045B76E /* SystemConfiguration.framework */; };
 		CB771782108119260045B76E /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CB771781108119260045B76E /* libz.1.2.3.dylib */; };
+		CB78622810C99EAB00FD1209 /* sub.caf in Resources */ = {isa = PBXBuildFile; fileRef = CB78622710C99EAB00FD1209 /* sub.caf */; };
 		CBF56B60108A52A700F44401 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = CBF56B5F108A52A700F44401 /* Default.png */; };
 		CBFD45FA108021C200B74F81 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBFD45F9108021C200B74F81 /* MessageUI.framework */; };
 /* End PBXBuildFile section */
@@ -61,6 +62,7 @@
 		CB771772108118CD0045B76E /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		CB77177C108118FE0045B76E /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		CB771781108119260045B76E /* libz.1.2.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.3.dylib; path = usr/lib/libz.1.2.3.dylib; sourceTree = SDKROOT; };
+		CB78622710C99EAB00FD1209 /* sub.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = sub.caf; sourceTree = "<group>"; };
 		CBF56B5F108A52A700F44401 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		CBFD45F9108021C200B74F81 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -132,6 +134,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				CB78622710C99EAB00FD1209 /* sub.caf */,
 				2899E5210DE3E06400AC0155 /* PushyViewController.xib */,
 				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
 				8D1107310486CEB800E47090 /* Pushy-Info.plist */,
@@ -216,6 +219,7 @@
 				28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */,
 				2899E5220DE3E06400AC0155 /* PushyViewController.xib in Resources */,
 				CBF56B60108A52A700F44401 /* Default.png in Resources */,
+				CB78622810C99EAB00FD1209 /* sub.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
