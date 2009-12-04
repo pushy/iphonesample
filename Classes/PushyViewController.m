@@ -26,7 +26,8 @@
 	
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Device Token" style:UIBarButtonItemStylePlain target:self action:@selector(showDeviceToken)];
-
+	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Clear" style:UIBarButtonItemStylePlain target:self action:@selector(clearNotifications)];
+	
 	// subscribe to the newNotif notification so we can reload the table view
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reload) name:@"newNotif" object:nil];
 }
@@ -44,6 +45,13 @@
 	UIAlertView *deviceTokenAlert = [[UIAlertView alloc] initWithTitle:@"Device Token" message:deviceToken delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:@"Email", nil];
 	[deviceTokenAlert show];
 	[deviceTokenAlert release];
+}
+
+- (void)clearNotifications {
+	NSLog(@"Clearing notifications");
+	[data removeAllObjects];
+	[[NSUserDefaults standardUserDefaults] setObject:data forKey:@"_PDNotifications"];
+	[self.tableView reloadData];
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
