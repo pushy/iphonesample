@@ -114,6 +114,7 @@
 	[request setPostValue:newToken forKey:@"token"];
 	[request setPostValue:alias forKey:@"alias"];
 	
+	NSLog(@"Auth: %@ %@", kApplicationKey, kApplicationSecret);
 	request.username = kApplicationKey;
 	request.password = kApplicationSecret;
 	

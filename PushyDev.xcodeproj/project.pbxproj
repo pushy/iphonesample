@@ -268,11 +268,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Charles Melbye (BNGVQPCAM8)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Charles Melbye (BNGVQPCAM8)";
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Pushy_Prefix.pch;
 				INFOPLIST_FILE = "Pushy-Info.plist";
 				PRODUCT_NAME = PushyDev;
+				PROVISIONING_PROFILE = "47A6B708-66A0-44BC-ADA2-105B0BB0D258";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "47A6B708-66A0-44BC-ADA2-105B0BB0D258";
 			};
 			name = Release;
 		};

@@ -42,7 +42,7 @@
 	deviceToken = [appDelegate token];
 	
 	// show the device token in an alert
-	UIAlertView *deviceTokenAlert = [[UIAlertView alloc] initWithTitle:@"Device Token" message:deviceToken delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:@"Email", nil];
+	UIAlertView *deviceTokenAlert = [[UIAlertView alloc] initWithTitle:@"Device Token" message:deviceToken delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Copy", @"Email", nil];
 	[deviceTokenAlert show];
 	[deviceTokenAlert release];
 }
@@ -55,7 +55,9 @@
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-	if (buttonIndex != 0) {
+	if (buttonIndex == 1) {
+		[UIPasteboard generalPasteboard].string = deviceToken;
+	} else if (buttonIndex == 2) {
 		// send device token in email, save for later
 		MFMailComposeViewController *mail = [[MFMailComposeViewController alloc] init];
 		[mail setMessageBody:deviceToken isHTML:NO];
@@ -80,6 +82,9 @@
     return 1;
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
 
 // Customize the number of rows in the table view.
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
