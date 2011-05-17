@@ -8,6 +8,7 @@
 
 #import "PushyAppDelegate.h"
 #import "PushyViewController.h"
+#import "JSON.h"
 
 // Insert your application's API keys
 #define kApplicationKey @""
@@ -27,8 +28,8 @@
 @synthesize token;
 @synthesize deviceAlias;
 
-- (void)applicationDidFinishLaunching:(UIApplication *)application {    
-    // Register for remote notifications
+- (void)applicationDidFinishLaunching:(UIApplication *)application {
+	// Register for remote notifications
 	NSLog(@"Registering for remote notifications");
 	[[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
 	
@@ -39,44 +40,18 @@
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
 	NSLog(@"Remote notifications registered successfully");
-	token = [NSString stringWithFormat:@"%@", deviceToken];
+	self.token = [NSString stringWithFormat:@"%@", deviceToken];
 	
 	// Normalize
-	token = [token stringByReplacingOccurrencesOfString:@"<" withString:@""];
-	token = [token stringByReplacingOccurrencesOfString:@">" withString:@""];
-	
+	self.token = [token stringByReplacingOccurrencesOfString:@"<" withString:@""];
+	self.token = [token stringByReplacingOccurrencesOfString:@">" withString:@""];
+	self.token = [token stringByReplacingOccurrencesOfString:@" " withString:@""];
+    
 	[token retain];
 	
-	NSLog(@"deviceToken: %@", token);
+	NSLog(@"Device token: %@", token);
 	
-	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-	
-	NSString *lastToken = [userDefaults stringForKey: @"_PDLastToken"];
-	self.deviceAlias = [userDefaults stringForKey: @"_PDDeviceAlias"];
-	
-	if (self.deviceAlias != nil) {
-		if ( ![token isEqualToString:lastToken] ) {
-			// Display network activity indicator
-			[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-			
-			// We need to update the device token on the server, lets do it right now
-			[self updateAlias:self.deviceAlias withToken:token];
-		}
-	} else { // we don't have an alias yet is nil, set it
-		NSLog(@"Showing alert with to set device alias");
-		
-		aliasAlert = [[UIAlertView alloc] init];
-		[aliasAlert setDelegate:self];
-		[aliasAlert setTitle:@"Welcome to Pushy!"];
-		[aliasAlert setMessage:@"Choose an alias that will represent your device on Pushy"];
-		[aliasAlert addButtonWithTitle:@"Save"];
-		[aliasAlert addTextFieldWithValue:@"" label:@"Alias"];
-		
-		aliasTextField = [aliasAlert textFieldAtIndex:0];
-		aliasTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-		
-		[aliasAlert show];
-	}
+    [self findAliasWithToken:token];
 }
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
@@ -95,34 +70,29 @@
 	//[viewController presentModalViewController:mail animated:YES];
 }
 
-//- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error {
-//	[viewController dismissModalViewControllerAnimated:YES];
-//}
-
 - (void)newAlias:(NSString *)alias forToken:(NSString *)newToken {
-	// Put it in a format that Pushy (currently) expects
-	newToken = [newToken stringByReplacingOccurrencesOfString:@" " withString:@""];
-	
-	// Setup a queue for API calls and stuff
-	NSOperationQueue *queue = [[[NSOperationQueue alloc] init] autorelease];
-	
-	NSURL *url = [NSURL URLWithString: @"http://pushyapp.com/api/v1/devices"];
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    
+	NSURL *url = [NSURL URLWithString: @"http://frontend.pushy.dotcloud.com/api/v1/devices.json"];
 	
 	ASIFormDataRequest *request = [[[ASIFormDataRequest alloc] initWithURL:url] autorelease];
 	request.requestMethod = @"POST";
 	
 	[request setPostValue:newToken forKey:@"token"];
-	[request setPostValue:alias forKey:@"alias"];
-	
-	NSLog(@"Auth: %@ %@", kApplicationKey, kApplicationSecret);
+    
+    if (alias != nil && alias != @"") {
+        [request setPostValue:alias forKey:@"alias"];
+    }
+    
 	request.username = kApplicationKey;
 	request.password = kApplicationSecret;
 	
 	[request setDelegate:self];
-	[request setDidFinishSelector: @selector(successMethod:)];
-	[request setDidFailSelector: @selector(requestWentWrong:)];
-	[queue addOperation:request];
+	[request setDidFinishSelector: @selector(aliasDidRegister:)];
+	[request setDidFailSelector: @selector(aliasRegistrationFailure:)];
 	
+    [request startAsynchronous];
+    
 	self.deviceAlias = alias;
 }
 
@@ -130,21 +100,111 @@
 	
 }
 
-- (void)successMethod:(ASIHTTPRequest *) request {
-	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-	[userDefaults setValue: self.token forKey: @"_PDLastToken"];
-	[userDefaults setValue: self.deviceAlias forKey: @"_PDDeviceAlias"];
-	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-	NSLog(@"YAY!");
+- (void)findAliasWithToken:(NSString *)deviceToken {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    
+    NSURL *url = [NSURL URLWithString: [NSString stringWithFormat:@"http://frontend.pushy.dotcloud.com/api/v1/devices/by_token.json?token=%@", deviceToken]];
+    
+    ASIHTTPRequest *request = [[[ASIHTTPRequest alloc] initWithURL:url] autorelease];
+    request.requestMethod = @"GET";
+    
+    request.username = kApplicationKey;
+    request.password = kApplicationSecret;
+    
+    [request setDelegate:self];
+    [request setDidFinishSelector: @selector(aliasWasFound:)];
+    [request setDidFailSelector: @selector(aliasFindFailure:)];
+    
+    [request startAsynchronous];
 }
 
-- (void)requestWentWrong:(ASIHTTPRequest *)request {
+- (void)aliasDidRegister:(ASIHTTPRequest *) request {
+	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    
+    int statusCode = [request responseStatusCode];
+    
+    if (statusCode == 201) { // 201 Created
+        UIAlertView *aliasRegistered = [[UIAlertView alloc] initWithTitle:@"Welcome to Pushy!"
+                                                                  message:@"Your device has been registered"
+                                                                 delegate:self
+                                                        cancelButtonTitle:@"Okay"
+                                                        otherButtonTitles:nil];
+        [aliasRegistered show];
+        [aliasRegistered release];
+        
+        NSLog(@"YAY!");
+    } else {
+        UIAlertView *aliasRegisterProblem = [[UIAlertView alloc] initWithTitle:@"Pushy Error"
+                                                                       message:@"Your device could not be registered. The alias might already be taken."
+                                                                      delegate:self
+                                                             cancelButtonTitle:@"Okay"
+                                                             otherButtonTitles:nil];
+        [aliasRegisterProblem show];
+        [aliasRegisterProblem release];
+        
+        self.deviceAlias = nil;
+    }
+    
+}
+
+- (void)aliasRegistrationFailure:(ASIHTTPRequest *)request {
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 	NSError *error = [request error];
 	UIAlertView *someError = [[UIAlertView alloc] initWithTitle: 
-							  @"Network error" message: @"Error registering with server"
+							  @"Pushy error" message: @"Error registering with server"
 													   delegate: self
-											  cancelButtonTitle: @"Ok"
+											  cancelButtonTitle: @"Okay"
+											  otherButtonTitles: nil];
+	[someError show];
+	[someError release];
+	NSLog(@"ERROR: NSError query result: %@", error);
+}
+
+- (void)aliasWasFound:(ASIHTTPRequest *)request {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    
+    int statusCode = [request responseStatusCode];
+    
+    if (statusCode == 200) { // success
+        NSDictionary *device = [[request responseString] JSONValue];
+        
+        self.deviceAlias = [device valueForKey:@"alias"];
+        
+        NSLog(@"Showing alert to welcome user");
+        
+        UIAlertView *welcomeAlert = [[UIAlertView alloc] init];
+        [welcomeAlert setTitle:@"Welcome back!"];
+        [welcomeAlert setMessage:[NSString stringWithFormat:@"Thanks for using Pushy, %@!", self.deviceAlias]];
+        [welcomeAlert addButtonWithTitle:@"Okay"];
+        
+        [welcomeAlert show];
+        [welcomeAlert release];
+    } else if (statusCode == 404) { // not found
+        NSLog(@"Showing alert with to set device alias");
+		
+        aliasAlert = [[UIAlertView alloc] initWithTitle:@"Welcome to Pushy!"
+                                                message:@"Choose an alias that will represent your device on Pushy"
+                                               delegate:self
+                                      cancelButtonTitle:@"Save"
+                                      otherButtonTitles:nil];
+        
+		[aliasAlert addTextFieldWithValue:@"" label:@"Alias"];
+		
+		aliasTextField = [aliasAlert textFieldAtIndex:0];
+		aliasTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+		
+		[aliasAlert show];
+    }
+}
+
+- (void)aliasFindFailure:(ASIHTTPRequest *)request {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    
+	NSError *error = [request error];
+	UIAlertView *someError = [[UIAlertView alloc] initWithTitle: 
+							  @"Pushy error" message: @"Error finding device"
+													   delegate: self
+											  cancelButtonTitle: @"Okay"
 											  otherButtonTitles: nil];
 	[someError show];
 	[someError release];

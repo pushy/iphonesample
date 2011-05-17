@@ -28,6 +28,7 @@
 @property (copy) NSString *token;
 @property (copy) NSString *deviceAlias;
 
+- (void)findAliasWithToken:(NSString *)deviceToken;
 - (void)updateAlias:(NSString *)alias withToken:(NSString *)newToken;
 - (void)newAlias:(NSString *)alias forToken:(NSString *)newToken;
 
